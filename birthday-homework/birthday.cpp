@@ -20,6 +20,12 @@ Birthday::Birthday(string name, int month, int day)
 {
 }
 
+// Initialize the list of month abbreviations
+const string Birthday::_month_abbreviations[12] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+
 // getName
 // Pre: 
 //   none
