@@ -40,11 +40,6 @@ private:
 	int _day;
 	static const string _month_abbreviations[12];
 
-//  Not implemented but this would be a basic way to verify given day is correct
-	/*                          Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec */
-//	static const int _days_per_month[12];
-	// = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 	string getMonthAbbr() const;
 };
 
