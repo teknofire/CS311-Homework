@@ -5,16 +5,16 @@
 	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
 	<false/>
 	<key>IDESourceControlProjectIdentifier</key>
-	<string>529E704E-483F-4171-9318-20F4A3745643</string>
+	<string>5B629166-735C-47A0-BA1E-E9E3E9B90DD7</string>
 	<key>IDESourceControlProjectName</key>
-	<string>class_test</string>
+	<string>ksarray-hw1</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>33FE8629-0C73-443C-9D1B-A7E4BB053186</key>
 		<string>https://github.com/teknofire/CS311-Homework.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>wrapper/class_test/class_test.xcodeproj/project.xcworkspace</string>
+	<string>ksarray-hw2-2/ksarray-hw1/ksarray-hw1.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>33FE8629-0C73-443C-9D1B-A7E4BB053186</key>
