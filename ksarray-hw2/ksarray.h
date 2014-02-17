@@ -1,9 +1,10 @@
-/*
- * ksarray.h
- *
- *  Created on: Feb 10, 2014
- *      Author: Will
- */
+//
+//  ksarray.h
+//  ksarray-hw2
+//
+//  Created by Will Fisher on 2/10/14.
+//  Copyright (c) 2014 Will Fisher. All rights reserved.
+//
 
 #ifndef KSARRAY_H_
 #define KSARRAY_H_
@@ -87,9 +88,28 @@ KSArray<DataType>::KSArray(const KSArray<DataType> &rhs) : _size(rhs.size()), _d
 }
 
 template <typename DataType>
+typename KSArray<DataType>::value_type & KSArray<DataType>::operator[](size_type index)
+{
+    return _data[index];
+}
+
+template <typename DataType>
+const typename KSArray<DataType>::value_type KSArray<DataType>::operator[](size_type index) const
+{
+    return _data[index];
+}
+
+
+template <typename DataType>
 bool operator==(const KSArray<DataType> &lhs, const KSArray<DataType> &rhs) {
 	return (lhs._size == rhs._size && lhs._data == rhs._data);
 }
+
+template <typename DataType>
+bool operator!=(const KSArray<DataType> &lhs, const KSArray<DataType> &rhs) {
+	return !(lhs == rhs);
+}
+
 
 template <typename DataType>
 bool KSArray<DataType>::operator<(const KSArray<DataType> &rhs)
@@ -102,9 +122,21 @@ bool KSArray<DataType>::operator<(const KSArray<DataType> &rhs)
 }
 
 template <typename DataType>
-bool operator!=(const KSArray<DataType> &lhs, const KSArray<DataType> &rhs)
+bool KSArray<DataType>::operator<=(const KSArray<DataType> &rhs)
 {
-  return !(lhs == rhs);
+	return false;
+}
+
+template <typename DataType>
+bool KSArray<DataType>::operator>(const KSArray<DataType> &rhs)
+{
+	return false;
+}
+
+template <typename DataType>
+bool KSArray<DataType>::operator>=(const KSArray<DataType> &rhs)
+{
+	return false;
 }
 
 //operator=
