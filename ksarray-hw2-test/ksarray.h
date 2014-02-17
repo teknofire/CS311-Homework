@@ -2,7 +2,8 @@
  * ksarray.h
  *
  *  Created on: Feb 10, 2014
- *      Author: Will
+ *      Author: Will Fisher
+ *      Description: Template class for kinda smart array container
  */
 
 #ifndef KSARRAY_H_
@@ -13,17 +14,16 @@
 
 // KSArray template class
 // Class invariants
-// Preconditions
-// 		if size is given it must be a valid value for std::site_t otherwise defaults to 10
-//		if value give it must be  type as the initialized class template
+// 		size >= 0
+//      _data points to an array of items of the given type allocated with new, owned by *this
 // Requirements on Types:
-// 		DataType must have operator<, operator=, operator==, operator!=
-template <typename DataType>
+// 		ValueType must have operator<, operator=, operator==, operator!=
+template <typename ValueType>
 class KSArray
 {
 public:
 	typedef std::size_t size_type;
-	typedef DataType value_type;
+	typedef ValueType value_type;
 
 	explicit KSArray(size_type size = 10);
 	KSArray(size_type size, value_type value);
@@ -43,29 +43,47 @@ public:
 
 	KSArray<value_type> & operator=(const KSArray<value_type> &rhs);
 
-	bool operator==(const KSArray<value_type> &rhs) const;
-	bool operator!=(const KSArray<value_type> &rhs) const;
-	bool operator<(const KSArray<value_type> &rhs) const;
-	bool operator<=(const KSArray<value_type> &rhs) const;
-	bool operator>(const KSArray<value_type> &rhs) const;
-	bool operator>=(const KSArray<value_type> &rhs) const;
-
 private:
 	size_type _size;
 	value_type * _data;
 };
 
+template <typename ValueType>
+bool operator==(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
+template <typename ValueType>
+bool operator!=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
+template <typename ValueType>
+bool operator<(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
+template <typename ValueType>
+bool operator<=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
+template <typename ValueType>
+bool operator>(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
+template <typename ValueType>
+bool operator>=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs);
+
 /* Function Implementations */
 
-
-template <typename DataType>
-KSArray<DataType>::KSArray(KSArray<DataType>::size_type size): _size(size), _data(new value_type[size])
+// Constructor
+// Preconditions
+//    Must satisfy class invariants
+template <typename ValueType>
+KSArray<ValueType>::KSArray(KSArray<ValueType>::size_type size): _size(size), _data(new value_type[size])
 {
 
 }
 
-template <typename DataType>
-KSArray<DataType>::KSArray(KSArray<DataType>::size_type size, KSArray<DataType>::value_type value): _size(size), _data(new value_type[size])
+// Constructor with initialization value
+// Preconditions
+//    Must satisfy class invariants
+// Postconditions
+//    _data items will be initialized with the given value
+template <typename ValueType>
+KSArray<ValueType>::KSArray(KSArray<ValueType>::size_type size, KSArray<ValueType>::value_type value): _size(size), _data(new value_type[size])
 {
 	for(auto it = begin(); it != end(); ++it)
 	{
@@ -73,20 +91,35 @@ KSArray<DataType>::KSArray(KSArray<DataType>::size_type size, KSArray<DataType>:
 	}
 }
 
-template <typename DataType>
-KSArray<DataType>::KSArray(const KSArray<DataType> &rhs) : _size(rhs.size()), _data(new KSArray<DataType>::value_type[rhs.size()])
+// Copy Constructor
+// Preconditions
+//    Must satisfy class invariants
+// Postconditions
+//    makes a copy of rhs
+template <typename ValueType>
+KSArray<ValueType>::KSArray(const KSArray<ValueType> &rhs) : _size(rhs.size()), _data(new KSArray<ValueType>::value_type[rhs.size()])
 {
 	std::copy(rhs.begin(), rhs.end(), _data);
 }
 
-template <typename DataType>
-KSArray<DataType>::~KSArray()
+// Destructor
+// Preconditions
+//    None
+// Postconditions
+//    frees up allocated memory
+template <typename ValueType>
+KSArray<ValueType>::~KSArray()
 {
 	delete [] _data;
 }
 
-template <typename DataType>
-KSArray<DataType> & KSArray<DataType>::operator=(const KSArray<DataType> &rhs)
+// operator=
+// Preconditions
+//   None
+// Postconditions
+//   makes *this a copy of rhs
+template <typename ValueType>
+KSArray<ValueType> & KSArray<ValueType>::operator=(const KSArray<ValueType> &rhs)
 {
 	if (this != &rhs)
 	{
@@ -99,52 +132,88 @@ KSArray<DataType> & KSArray<DataType>::operator=(const KSArray<DataType> &rhs)
 	return *this;
 }
 
-template <typename DataType>
-typename KSArray<DataType>::value_type * KSArray<DataType>::end()
+// end
+// Preconditions
+//    None
+// Postconditions
+//    returns ptr to the end of the array
+template <typename ValueType>
+typename KSArray<ValueType>::value_type * KSArray<ValueType>::end()
 {
 	return &_data[_size];
 }
 
-template <typename DataType>
-const typename KSArray<DataType>::value_type * KSArray<DataType>::end() const
+// end (const)
+// Preconditions
+//    None
+// Postconditions
+//    returns ptr to the end of the array
+template <typename ValueType>
+const typename KSArray<ValueType>::value_type * KSArray<ValueType>::end() const
 {
 	return &_data[_size];
 }
 
-template <typename DataType>
-typename KSArray<DataType>::value_type * KSArray<DataType>::begin()
+// begin
+// Preconditions
+//    None
+// Postconditions
+//    returns ptr to the beginning of the array
+template <typename ValueType>
+typename KSArray<ValueType>::value_type * KSArray<ValueType>::begin()
 {
 	return &_data[0];
 }
 
-template <typename DataType>
-const typename KSArray<DataType>::value_type * KSArray<DataType>::begin() const
+// begin (const)
+// Preconditions
+//    None
+// Postconditions
+//    returns a ptr to the beginning of the array, value cannot be changed.
+template <typename ValueType>
+const typename KSArray<ValueType>::value_type * KSArray<ValueType>::begin() const
 {
 	return &_data[0];
 }
 
-template <typename DataType>
-typename KSArray<DataType>::value_type & KSArray<DataType>::operator[](KSArray<DataType>::size_type index)
+// operator[]
+// Preconditions
+//    0 <= index >= *this.size()
+// Postconditions
+//    returns a reference to value at the given position in the array
+template <typename ValueType>
+typename KSArray<ValueType>::value_type & KSArray<ValueType>::operator[](KSArray<ValueType>::size_type index)
 {
 	return _data[index];
 }
 
-template <typename DataType>
-const typename KSArray<DataType>::value_type KSArray<DataType>::operator[](KSArray<DataType>::size_type index) const
+// operator [] const
+// Preconditions
+//    0 <= index >= *this.size()
+// Postconditions
+//    returns the value at the given position in the array, cannot be modified.
+template <typename ValueType>
+const typename KSArray<ValueType>::value_type KSArray<ValueType>::operator[](KSArray<ValueType>::size_type index) const
 {
 	return _data[index];
 }
 
-template <typename DataType>
-bool KSArray<DataType>::operator==(const KSArray<DataType> &rhs) const
+// operator==
+// Preconditions
+//    None
+// Postconditions
+//    returns true if the size and values of the arrays are the same
+//    returns false otherwise
+template <typename ValueType>
+bool operator==(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	if (_size == rhs._size)
+	if (lhs.size() == rhs.size())
 	{
-		auto lhs_iterator = begin();
+		auto lhs_iterator = lhs.begin();
 		auto rhs_iterator = rhs.begin();
 
 		/* check to see if we can find any lhs values that are lexically != rhs values */
-		for(; lhs_iterator != end() && rhs_iterator != rhs.end(); ++lhs_iterator, ++rhs_iterator)
+		for(; lhs_iterator != lhs.end() && rhs_iterator != rhs.end(); ++lhs_iterator, ++rhs_iterator)
 		{
 			if (*lhs_iterator != *rhs_iterator)
 				return false;
@@ -156,49 +225,83 @@ bool KSArray<DataType>::operator==(const KSArray<DataType> &rhs) const
 	return false;
 }
 
-template <typename DataType>
-bool KSArray<DataType>::operator!=(const KSArray<DataType> &rhs) const
+// operator!=
+// Preconditions
+//    None
+// Postconditions
+//    return true if lhs != rhs
+//    return false otherwise
+template <typename ValueType>
+bool operator!=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	return !(*this == rhs);
+	return !(lhs == rhs);
 }
 
-template <typename DataType>
-bool KSArray<DataType>::operator<(const KSArray<DataType> &rhs) const
+// operator<
+// Preconditions
+//    None
+// Postconditions
+//    return true if lhs lexically < rhs
+//    return true if lhs == rhs and lhs size < rhs size
+//    return false otherwise
+template <typename ValueType>
+bool operator<(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	auto lhs_iterator = begin();
+	auto lhs_iterator = lhs.begin();
 	auto rhs_iterator = rhs.begin();
 
-	/* check to see if we can find any lhs values that are lexically > rhs values */
-	for(; lhs_iterator != end() && rhs_iterator != rhs.end(); ++lhs_iterator, ++rhs_iterator)
+	for(; lhs_iterator != lhs.end() && rhs_iterator != rhs.end(); ++lhs_iterator, ++rhs_iterator)
 	{
 		if (*lhs_iterator != *rhs_iterator)
 			return *lhs_iterator < *rhs_iterator;
 	}
-	return size() < rhs.size();
+	return lhs.size() < rhs.size();
 }
 
-
-template <typename DataType>
-bool KSArray<DataType>::operator>(const KSArray<DataType> &rhs) const
+// operator>
+// Preconditions
+//    None
+// Postconditions
+//    return true if lhs lexically > rhs
+//    return true if lhs == rhs and lhs size > rhs size
+//    return false otherwise
+template <typename ValueType>
+bool operator>(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	return rhs < *this;
+	return rhs < lhs;
 }
 
-template <typename DataType>
-bool KSArray<DataType>::operator>=(const KSArray<DataType> &rhs) const
+// operator>=
+// Preconditions
+//    None
+// Postconditions
+//    return true if lhs >= rhs
+//    return false otherwise
+template <typename ValueType>
+bool operator>=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	return !(*this < rhs);
+	return !(lhs < rhs);
 }
 
-template <typename DataType>
-bool KSArray<DataType>::operator<=(const KSArray<DataType> &rhs) const
+// operator<=
+// Preconditions
+//    None
+// Postconditions
+//    return true if lhs <= rhs
+//    return false otherwise
+template <typename ValueType>
+bool operator<=(const KSArray<ValueType> &lhs, const KSArray<ValueType> &rhs)
 {
-	return !(rhs < *this);
+	return !(rhs < lhs);
 }
 
-
-template <typename DataType>
-typename KSArray<DataType>::size_type KSArray<DataType>::size() const
+// size
+// Preconditions
+//    None
+// Postconditions
+//    returns the size of the array
+template <typename ValueType>
+typename KSArray<ValueType>::size_type KSArray<ValueType>::size() const
 {
 	return _size;
 }
