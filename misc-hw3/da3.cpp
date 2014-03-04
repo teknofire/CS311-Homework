@@ -1,3 +1,7 @@
+// da3.cpp (HW3 assignment for CS311)
+// Will Fisher
+// 02/24/2014
+//
 // da3.cpp (skeleton)
 // Chris Hartman
 // 2/12/2010
@@ -13,10 +17,10 @@
 
 /*
  * Precodition:
- * 		0 < n < sizeof int
+ * 		0 < n < max value of int
  * Postcondition:
  * 		returns the number of steps required to get to n == 1
- *
+ *      Does not throw
  */
 int collatz(int n)
 {

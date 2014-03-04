@@ -1,3 +1,7 @@
+// da3.h (HW3 assignment for CS311)
+// Will Fisher
+// 02/24/2014
+//
 // da3.h (Skeleton)
 // Chris Hartman
 // 2/12/2010
@@ -14,8 +18,8 @@
 
 #include <iostream>   // for std::ostream
 #include <string>     // for std::string
-#include <iterator>	  // for std::ostream_iterator
-#include <algorithm>  // for std::copy
+#include <algorithm>  // for std::equal
+#include <stdexcept>  // for std::out_of_range
 
 
 // *************************************************************** // *
@@ -64,11 +68,23 @@ struct LLNode {                                                    // *
 // *************************************************************** // *
 
 
-
+/*
+ * listItem
+ *
+ * Preconditions
+ * 		0 <= index <= size of head
+ * Postconditions
+ * 		May throw std::out_of_range if index is not valid for the linked list
+ * 		returns the value at the index-1 from the linked list
+ *
+ */
 template <typename T>
 T listItem(const LLNode<T> * head,
            int index)
 {
+	if (index < 0)
+		throw std::out_of_range("listItem :: given index is out of range");
+
 	auto node = head;
 	int count = 0;
 
@@ -84,7 +100,15 @@ T listItem(const LLNode<T> * head,
 	throw std::out_of_range("listItem :: given index is out of range");
 }
 
-
+/*
+ * didItThrow
+ *
+ * Preconditions
+ * 		none
+ * Postcontitions
+ * 		sets threw to true if an exception is cause and false otherwise
+ * 		will re-raise the exception
+ */
 template <typename Func>
 void didItThrow(Func f,
                 bool & threw)
@@ -99,6 +123,15 @@ void didItThrow(Func f,
 	}
 }
 
+/*
+ * printRange
+ *
+ * Preconditions
+ * 		theStream must valid and not in an error state
+ * 		first and last must meet requirements for ForwardIterator
+ * Postconditions
+ * 		values in the range are output to the given stream with a newline added after each value
+ */
 template <typename FDIter>
 void printRange(FDIter first,
                 FDIter last,
@@ -111,9 +144,11 @@ void printRange(FDIter first,
 /*
  * rangesEqual
  * Preconditions:
+ * 		first1, last1 must meet requirements for ForwardIterator
+ * 		values must be comparable using operator==
  * 		first1 comes before last1 and can reach last1
  * Postconditions:
- * 		returns true if the values in ranges first1..last1 match values starting at first2
+ * 		returns true if the ranges first1..last1 match values starting at first2
  * 		returns false otherwise
  */
 template <typename FDIter>
