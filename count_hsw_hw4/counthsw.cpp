@@ -7,8 +7,14 @@
 
 #include "counthsw.h"
 #include <iostream>
-#include <ctime>
 
+/* Board constructor
+ *
+ * Preconditions:
+ * 	none
+ * Postconditions:
+ * 	none
+ */
 Board::Board(Board::Coord size, Board::Coord hole, Board::Coord finish)
 	: _size(size), _finish(finish), _nodes(_size.first * _size.second, 0),
 	  _row_visit_counts(_size.second, 0), _col_visit_counts(_size.first,0)
@@ -16,16 +22,32 @@ Board::Board(Board::Coord size, Board::Coord hole, Board::Coord finish)
 	visit(hole);
 }
 
-/* Playing with seeing if there is a different set of steps we take that can help find orphaned nodes */
+/* static Board::adjacent_dirs
+ * static list of directions used to find neighboring nodes
+ * Playing with different orderings to seeing if can help find orphaned nodes quicker
+ */
 //std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,1), Coord(0,1), Coord(1, 1), Coord(1,0), Coord(1,-1), Coord(0, -1), Coord(-1,-1), Coord(-1, 0)};
 //std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,0), Coord(0,1), Coord(1, 0), Coord(0,-1), Coord(-1,1), Coord(1, 1), Coord(1,-1), Coord(-1, -1)};
 std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,0), Coord(1, 0), Coord(0,1), Coord(0,-1), Coord(-1,1), Coord(1, 1), Coord(1,-1), Coord(-1, -1)};
 
+/* total_nodes
+ * Preconditions:
+ * 	none
+ * Postconditions:
+ * 	returns the total # of valid nodes for the board
+ */
 int Board::total_nodes()
 {
 	return (_size.first * _size.second) - 1;
 }
 
+/* get
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	return state of the give node (0 = unvisited, >1 = visited)
+ * 	will throw std::out_of_range if an invalid node is given
+ */
 int & Board::get(Board::Coord node)
 {
 	if (node.first < 0 || node.second < 0 || node.first >= _size.first || node.second >= _size.second)
@@ -34,11 +56,26 @@ int & Board::get(Board::Coord node)
 	return _nodes[node.first + (node.second * _size.first)];
 }
 
+/*
+ * been_visited
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	return true if we have previously visited the given node
+ */
 bool Board::been_visited(Board::Coord node)
 {
 	return get(node) > 0;
 }
 
+/*
+ * visit
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	returns false if we created any orphaned node
+ * 	returns true otherwise
+ */
 bool Board::visit(Board::Coord node)
 {
 	++_col_visit_counts[node.first];
@@ -62,6 +99,13 @@ bool Board::visit(Board::Coord node)
 	return true;
 }
 
+/*
+ * unvisit
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	none
+ */
 void Board::unvisit(Board::Coord node)
 {
 	--_col_visit_counts[node.first];
@@ -69,6 +113,14 @@ void Board::unvisit(Board::Coord node)
 	get(node) = 0;
 }
 
+/*
+ * is_orphaned
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	returns true if the given node has been cut off from the rest of the board
+ * 	returns false otherwise
+ */
 bool Board::is_orphaned(Coord node)
 {
 	for(auto dir:adjacent_dirs)
@@ -88,6 +140,14 @@ bool Board::is_orphaned(Coord node)
 	return true;
 }
 
+/*
+ * has_orphaned
+ * Preconditions:
+ * 	none
+ * Postconditions:
+ * 	returns true if there are any orphaned nodes on the board
+ * 	returns false otherwise
+ */
 bool Board::has_orphaned()
 {
 	for(int x=0; x < _size.first; ++x)
@@ -101,7 +161,15 @@ bool Board::has_orphaned()
 	return false;
 }
 
-int Board::count_solutions(Board::Coord node, int nodes_left)
+/*
+ * countHSW_recurse
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * 	0 < nodes_left <= total_nodes()
+ * Postconditions:
+ * 	returns the number of solutions that start with the given node
+ */
+int Board::countHSW_recurse(Board::Coord node, int nodes_left)
 {
 	try
 	{
@@ -126,7 +194,7 @@ int Board::count_solutions(Board::Coord node, int nodes_left)
 	int solutions = 0;
 	for(auto dir:adjacent_dirs)
 	{
-		solutions += count_solutions(Coord(node.first + dir.first, node.second + dir.second), nodes_left - 1);
+		solutions += countHSW_recurse(Coord(node.first + dir.first, node.second + dir.second), nodes_left - 1);
 	}
 
 	unvisit(node);
@@ -134,6 +202,18 @@ int Board::count_solutions(Board::Coord node, int nodes_left)
 	return solutions;
 }
 
+/*
+ * countHSW helper method
+ *  may throw bad_alloc
+ * Preconditions:
+ * 	0 < size_(x|y)
+ * 	0 < forbid_(x|y)
+ * 	0 < start_(x|y)
+ * 	0 < finish_(x|y)
+ * 	forbid_(x|y), start_(x|y) and finish_(x|y) must always be distinct locations on the board
+ * Postconditions:
+ * 	returns the number of holey spider walk solutions for the given board params
+ */
 int countHSW(int size_x, int size_y, int forbid_x, int forbid_y, int start_x, int start_y, int finish_x, int finish_y)
 {
 	Board::Coord start(start_x, start_y);
@@ -141,17 +221,6 @@ int countHSW(int size_x, int size_y, int forbid_x, int forbid_y, int start_x, in
 	Board::Coord forbid(forbid_x, forbid_y);
 	Board::Coord finish(finish_x, finish_y);
 
-	time_t starttime;
-	time_t endtime;
-
-	time(&starttime);
-	int solutions = 0;
-
 	Board b(size, forbid, finish);
-	solutions += b.count_solutions(start, b.total_nodes());
-
-	time(&endtime);
-	std::cout << difftime(endtime, starttime) << " seconds to solve" << std::endl;
-
-	return solutions;
+	return b.countHSW_recurse(start, b.total_nodes());
 }
