@@ -9,16 +9,17 @@
 #include <iostream>
 #include <ctime>
 
-Board::Board(Board::Coord size, Board::Coord hole, Board::Coord start, Board::Coord finish): _size(size), _hole(hole), _start(start), _finish(finish), _nodes(_size.first * _size.second, 0)
+Board::Board(Board::Coord size, Board::Coord hole, Board::Coord finish)
+	: _size(size), _finish(finish), _nodes(_size.first * _size.second, 0),
+	  _row_visit_counts(_size.second, 0), _col_visit_counts(_size.first,0)
 {
 	visit(hole);
-	// are we dealing with a large board (more than 19 spots and at least 3 on each side)
-	_large_board = (total_nodes() >= 19 && _size.first > 3 && _size.second > 3);
 }
 
 /* Playing with seeing if there is a different set of steps we take that can help find orphaned nodes */
 //std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,1), Coord(0,1), Coord(1, 1), Coord(1,0), Coord(1,-1), Coord(0, -1), Coord(-1,-1), Coord(-1, 0)};
-std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,0), Coord(0,1), Coord(1, 0), Coord(0,-1), Coord(-1,1), Coord(1, 1), Coord(1,-1), Coord(-1, -1)};
+//std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,0), Coord(0,1), Coord(1, 0), Coord(0,-1), Coord(-1,1), Coord(1, 1), Coord(1,-1), Coord(-1, -1)};
+std::vector<Board::Coord> Board::adjacent_dirs = {Coord(-1,0), Coord(1, 0), Coord(0,1), Coord(0,-1), Coord(-1,1), Coord(1, 1), Coord(1,-1), Coord(-1, -1)};
 
 int Board::total_nodes()
 {
@@ -38,43 +39,34 @@ bool Board::been_visited(Board::Coord node)
 	return get(node) > 0;
 }
 
-void Board::visit(Board::Coord node)
+bool Board::visit(Board::Coord node)
 {
+	++_col_visit_counts[node.first];
+	++_row_visit_counts[node.second];
 	get(node) = 1;
+
+	if (_col_visit_counts[node.first] == _size.second)
+	{
+		//we filled up this column
+		if (node.first > 0 && node.first < (_size.first-1) && _col_visit_counts[node.first-1] < _size.second && _col_visit_counts[node.first+1] < _size.second)
+			return false;
+	}
+
+	if (_row_visit_counts[node.second] == _size.first)
+	{
+		//we filled up this row
+		if (node.second > 0 && node.second < (_size.second-1) && _row_visit_counts[node.second-1] < _size.first && _row_visit_counts[node.second+1] < _size.first)
+			return false;
+	}
+
+	return true;
 }
 
 void Board::unvisit(Board::Coord node)
 {
+	--_col_visit_counts[node.first];
+	--_row_visit_counts[node.second];
 	get(node) = 0;
-}
-
-std::vector<Board::Coord> Board::find_adjacent_nodes(Board::Coord node)
-{
-	std::vector<Coord> nbs;
-
-	for(auto dir:adjacent_dirs)
-	{
-		try
-		{
-			Coord neighbor(node.first + dir.first, node.second + dir.second);
-
-			if (!been_visited(neighbor))
-				nbs.push_back(neighbor);
-		}
-		catch(std::out_of_range &e)
-		{
-			//just swallow it
-		}
-	}
-
-	return nbs;
-}
-
-int Board::distance_to_finish(Coord node)
-{
-	auto a = abs(node.first - _finish.first);
-	auto b = abs(node.second - _finish.second);
-	return (a<b) ? b : a;
 }
 
 bool Board::is_orphaned(Coord node)
@@ -111,49 +103,33 @@ bool Board::has_orphaned()
 
 int Board::count_solutions(Board::Coord node, int nodes_left)
 {
-	if (node == _finish)
-		return (nodes_left == 1) ? 1 : 0;
-
-	//if we are near the finish make sure we didn't orphan it
-	//make sure we also check for orphaned nodes BEFORE visiting the current node
-	//this way we don't mistakenly think the last _finish node is orphaned at the end
-	//of a solution
-	if (distance_to_finish(node) == 2 && is_orphaned(_finish))
-		throw OrphanedNode();
-
-	static int part_way = total_nodes()/4+10;
-	if ((nodes_left % part_way == 0) && has_orphaned())
-		throw OrphanedNode();
-
-	int solutions = 0;
-	visit(node);
-
-	for(auto dir:adjacent_dirs)
+	try
 	{
-		try
+		if (been_visited(node))
+			return 0;
+
+		if (node == _finish)
+			return (nodes_left == 1) ? 1 : 0;
+
+		if (!visit(node))
 		{
-			Coord neighbor(node.first + dir.first, node.second + dir.second);
-			if (!been_visited(neighbor))
-			{
-				try
-				{
-					solutions += count_solutions(neighbor, nodes_left - 1);
-				}
-				catch(OrphanedNode &e)
-				{
-					//roll back till there isn't an orphaned node
-					unvisit(neighbor);
-					if(has_orphaned())
-						throw OrphanedNode();
-				}
-				unvisit(neighbor);
-			}
-		}
-		catch(std::out_of_range &e)
-		{
-			//just swallow it, just move on to the next item
+			// couldn't visit this node because it probably orphaned other nodes
+			unvisit(node);
+			return 0;
 		}
 	}
+	catch(std::out_of_range &e)
+	{
+		return 0;
+	}
+
+	int solutions = 0;
+	for(auto dir:adjacent_dirs)
+	{
+		solutions += count_solutions(Coord(node.first + dir.first, node.second + dir.second), nodes_left - 1);
+	}
+
+	unvisit(node);
 
 	return solutions;
 }
@@ -165,24 +141,17 @@ int countHSW(int size_x, int size_y, int forbid_x, int forbid_y, int start_x, in
 	Board::Coord forbid(forbid_x, forbid_y);
 	Board::Coord finish(finish_x, finish_y);
 
-	Board b(size, forbid, start, finish);
-//	time_t starttime;
-//	time_t endtime;
-//
-//	time(&starttime);
+	time_t starttime;
+	time_t endtime;
+
+	time(&starttime);
 	int solutions = 0;
 
-	try
-	{
-		solutions += b.count_solutions(start, b.total_nodes());
-	}
-	catch(OrphanedNode &e)
-	{
-		//orphaned right off the bat!
-	}
+	Board b(size, forbid, finish);
+	solutions += b.count_solutions(start, b.total_nodes());
 
-//	time(&endtime);
-//	std::cout << difftime(endtime, starttime) << " seconds to solve" << std::endl;
-//
+	time(&endtime);
+	std::cout << difftime(endtime, starttime) << " seconds to solve" << std::endl;
+
 	return solutions;
 }
