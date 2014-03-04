@@ -178,7 +178,7 @@ const typename KSArray<ValueType>::value_type * KSArray<ValueType>::begin() cons
 
 // operator[]
 // Preconditions
-//    0 <= index >= *this.size()
+//    0 <= index >= this->size()
 // Postconditions
 //    returns a reference to value at the given position in the array
 template <typename ValueType>
@@ -189,7 +189,7 @@ typename KSArray<ValueType>::value_type & KSArray<ValueType>::operator[](KSArray
 
 // operator [] const
 // Preconditions
-//    0 <= index >= *this.size()
+//    0 <= index >= this->size()
 // Postconditions
 //    returns the value at the given position in the array, cannot be modified.
 template <typename ValueType>
