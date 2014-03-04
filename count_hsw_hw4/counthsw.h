@@ -18,8 +18,7 @@ class Board {
 public:
 	typedef std::pair<int,int> Coord;
 
-	Board(Coord size, Coord hole
-			, Coord finish);
+	Board(Coord size, Coord hole, Coord finish);
 
 	int total_nodes();
 	int count_solutions(Coord node, int nodes_left);
@@ -29,6 +28,7 @@ public:
 	void unvisit(Coord node);
 	bool is_orphaned(Coord node);
 	bool has_orphaned();
+
 
 	Coord _size;
 	Coord _finish;
