@@ -1,8 +1,9 @@
 /*
  * counthsw.cpp
+ * Purpose: implementation file for counthsw homework #4
  *
  *  Created on: Feb 28, 2014
- *      Author: Will
+ *      Author: Will Fisher
  */
 
 #include "counthsw.h"
@@ -69,34 +70,47 @@ bool Board::been_visited(Board::Coord node)
 }
 
 /*
+ * column_orphaned_near
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	returns false if we created any orphaned columns near node
+ * 	returns true otherwise
+ */
+bool Board::column_orphaned_near(Board::Coord node)
+{
+	return _col_visit_counts[node.first] == _size.second && node.first > 0 &&
+			node.first < (_size.first-1) && _col_visit_counts[node.first-1] < _size.second &&
+			_col_visit_counts[node.first+1] < _size.second;
+}
+
+/*
+ * row_orphaned_near
+ * Preconditions:
+ * 	node is within the bounds of the board
+ * Postconditions:
+ * 	returns false if there are any orphaned rows near node
+ * 	returns true otherwise
+ */
+bool Board::row_orphaned_near(Board::Coord node)
+{
+	return _row_visit_counts[node.second] == _size.first && node.second > 0 &&
+			node.second < (_size.second-1) && _row_visit_counts[node.second-1] < _size.first &&
+			_row_visit_counts[node.second+1] < _size.first;
+}
+
+/*
  * visit
  * Preconditions:
  * 	node is within the bounds of the board
  * Postconditions:
- * 	returns false if we created any orphaned node
- * 	returns true otherwise
+ * 	none
  */
-bool Board::visit(Board::Coord node)
+void Board::visit(Board::Coord node)
 {
 	++_col_visit_counts[node.first];
 	++_row_visit_counts[node.second];
 	get(node) = 1;
-
-	if (_col_visit_counts[node.first] == _size.second)
-	{
-		//we filled up this column
-		if (node.first > 0 && node.first < (_size.first-1) && _col_visit_counts[node.first-1] < _size.second && _col_visit_counts[node.first+1] < _size.second)
-			return false;
-	}
-
-	if (_row_visit_counts[node.second] == _size.first)
-	{
-		//we filled up this row
-		if (node.second > 0 && node.second < (_size.second-1) && _row_visit_counts[node.second-1] < _size.first && _row_visit_counts[node.second+1] < _size.first)
-			return false;
-	}
-
-	return true;
 }
 
 /*
@@ -179,9 +193,11 @@ int Board::countHSW_recurse(Board::Coord node, int nodes_left)
 		if (node == _finish)
 			return (nodes_left == 1) ? 1 : 0;
 
-		if (!visit(node))
+		visit(node);
+
+		if (column_orphaned_near(node) || row_orphaned_near(node))
 		{
-			// couldn't visit this node because it probably orphaned other nodes
+			// failed to visit this node, probably because it orphaned other nodes
 			unvisit(node);
 			return 0;
 		}

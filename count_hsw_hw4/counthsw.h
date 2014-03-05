@@ -1,8 +1,9 @@
 /*
  * counthsw.h
+ * Purpose: header file for counthsw homework #4
  *
  *  Created on: Feb 28, 2014
- *      Author: Will
+ *      Author: Will Fisher
  */
 
 #ifndef COUNTHSW_H_
@@ -32,9 +33,11 @@ public:
 	int countHSW_recurse(Coord node, int nodes_left);
 	int & get(Coord node);
 	bool been_visited(Coord node);
-	bool visit(Coord node);
+	void visit(Coord node);
 	void unvisit(Coord node);
 	bool is_orphaned(Coord node);
+	bool column_orphaned_near(Coord node);
+	bool row_orphaned_near(Coord node);
 	bool has_orphaned();
 
 
