@@ -9,11 +9,9 @@
 #ifndef COUNTHSW_H_
 #define COUNTHSW_H_
 
-#include <vector>
+#include <vector>	 // for std::vector
 #include <utility>   // for std::pair
 #include <stdexcept> // for std::out_of_range
-#include <algorithm>
-#include <string>
 
 // Board class
 // Class invariants
